@@ -1,0 +1,113 @@
+#include <chrono>
+#include <fstream>
+#include <string>
+
+#define n 1000000
+
+using namespace std;
+
+void merge(long targetArr[], long tempArr[], 
+            long left, long mid, long right)
+{
+    // Reduce the use of "<="
+    mid++; // mid is now the first element not in left sub-array
+    right++; // right is now the first element not in right sub-array
+
+    // Copy data to temp array
+    for (long i = left; i < right; i++)
+        tempArr[i] = targetArr[i];
+
+    long indexOfSubArrOne = left, // Initial index of left sub-array
+        indexOfSubArrTwo = mid, // Initial index of right sub-array
+        indexOfMergedArr = left; // Initial index of merged array
+
+    // Merge the sub-arrays back into arr[left..right]
+    while (indexOfSubArrOne < mid
+           && indexOfSubArrTwo < right) {
+        if (tempArr[indexOfSubArrOne]
+            < tempArr[indexOfSubArrTwo]) {
+            targetArr[indexOfMergedArr]
+                = tempArr[indexOfSubArrOne];
+            indexOfSubArrOne++;
+        }
+        else {
+            targetArr[indexOfMergedArr]
+            = tempArr[indexOfSubArrTwo];
+            indexOfSubArrTwo++;
+        }
+        indexOfMergedArr++;
+    }
+
+    // Copy the remaining elements of
+    // the left sub-array, if there are any
+    while (indexOfSubArrOne < mid) {
+        targetArr[indexOfMergedArr]
+            = tempArr[indexOfSubArrOne];
+        indexOfSubArrOne++;
+        indexOfMergedArr++;
+    }
+
+    // Copy the remaining elements of
+    // the right sub-array, if there are any
+    while (indexOfSubArrTwo < right) {
+        targetArr[indexOfMergedArr]
+            = tempArr[indexOfSubArrTwo];
+        indexOfSubArrTwo++;
+        indexOfMergedArr++;
+    }
+}
+
+// begin is for left index and end is
+// right index of the sub-array
+// of array to be sorted
+// tempArr is to store the sub-arrays
+void mergeSort(long vect[], long tempArr[], long const begin, long const end)
+{
+    if (begin >= end)
+        return; // Returns recursively
+
+    long mid = begin + (end - begin) / 2;
+    mergeSort(vect, tempArr, begin, mid); // Apply mergeSort to left sub-array
+    mergeSort(vect, tempArr, mid + 1, end); // Apply mergeSort to right sub-array
+    merge(vect, tempArr, begin, mid, end); // Merge the sub-arrays
+}
+
+int main() {
+    string filename = "testx.txt"; // test number x
+
+    // Open the report file
+    ofstream fo;
+    fo.open("MergeSort_report.txt");
+
+    // Loop through every single test
+    for (char i = '0'; i < ':'; i++) { // i is the test index
+        // array to store the numbers in test i
+        long *numarr = new long[n] ;
+
+        // Open test i and read the numbers
+        filename[4] = i;
+        ifstream fi;
+        fi.open(filename);
+        for (long j = 0; j < n; j++) {
+            fi >> numarr[j];
+        }
+        fi.close();
+
+        // Measure the time
+        auto start = chrono::high_resolution_clock::now(); // start time
+        long *tempArr = new long[n]; // to store the sub-arrays
+        mergeSort(numarr, tempArr, 0, n - 1); // sorting
+        delete[] tempArr; // free up memory
+        auto end = chrono::high_resolution_clock::now(); // end time 
+        chrono::duration<double> duration = end - start; // calculate duration 
+
+        // Write the result
+        fo << duration.count() << std::endl;
+
+        // Free up memory
+        delete[] numarr;
+    } 
+
+    fo.close();
+    return 0;
+}
