@@ -1,0 +1,85 @@
+include <chrono>
+#include <fstream>
+#include <string>
+#include <algorithm>
+
+#define n 1000000
+
+using namespace std;
+
+// begin is for left index and end is
+// right index of the sub-array
+// of array to be sorted
+void quickSort(long arr[], long begin, long end) {
+    // Choose the leftmost element as the pivot
+
+    if (begin >= end) { // Nothing to sort here
+        return;
+    }
+
+    // Initialize index of the "high" sub-array, traversing backward
+    long firstOfHigh = end + 1; 
+
+    // traverse the "low" sub-array forward
+    for (long lastOfLow = begin + 1; lastOfLow < firstOfHigh; lastOfLow++) {
+        // find the first "high" element
+        if (arr[lastOfLow] < arr[begin]) {
+            continue;
+        }
+
+        // find the last "low" element and swap its value with the "high" element
+        while (firstOfHigh > lastOfLow) {
+            firstOfHigh--;
+            if (arr[firstOfHigh] < arr[begin]) {
+                swap(arr[lastOfLow], arr[firstOfHigh]);
+                break;
+            }
+        }
+    }
+
+    // Now arr[firstOfHigh] is the first element of the "high" sub-array
+    // pivot should be at index firstOfHigh - 1
+    swap(arr[begin], arr[firstOfHigh - 1]);
+
+    // Sort the sub-arrays
+    quickSort(arr, begin, firstOfHigh - 2);
+    quickSort(arr, firstOfHigh, end);
+}
+
+int main() {
+    string filename = "testx.txt"; // test number x
+
+    // Open the report file
+    ofstream fo;
+    fo.open("QuickSort_report.txt");
+
+    // Loop through every single test
+    for (char i = '2'; i < ':'; i++) { // i is the test index
+        // array to store the numbers in test i
+        long *numarr = new long[n] ;
+
+        // Open test i and read the numbers
+        filename[4] = i;
+        ifstream fi;
+        fi.open(filename);
+        for (long j = 0; j < n; j++) {
+            fi >> numarr[j];
+        }
+        fi.close();
+
+        // Measure the time
+        auto start = chrono::high_resolution_clock::now(); // start time
+        quickSort(numarr, 0, n - 1); // sorting
+        auto end = chrono::high_resolution_clock::now(); // end time 
+        chrono::duration<double> duration = end - start; // calculate duration 
+
+        // Write the result
+        fo << duration.count() << std::endl;
+
+        // Free up memory
+        delete[] numarr;
+    } 
+
+    fo.close();
+    return 0;
+}
